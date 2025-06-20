@@ -1,0 +1,106 @@
+using OpenTK.Graphics.OpenGL4;
+
+namespace PolyPanic.Render.Shader
+{
+    public class ShaderProgram
+    {
+        int Handle;
+
+        public int ProgramId => Handle;
+
+        private bool disposedValue = false;
+
+        // Compiles vertex and fragment shaders from file paths.
+        public ShaderProgram(string vertPath, string fragPath)
+        {
+            int VertShader;
+            int FragShader;
+
+            string VertShaderSource = File.ReadAllText(vertPath);
+            string FragShaderSource = File.ReadAllText(fragPath);
+
+            VertShader = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(VertShader, VertShaderSource);
+
+            FragShader = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(FragShader, FragShaderSource);
+
+            GL.CompileShader(VertShader);
+
+            GL.GetShader(VertShader, ShaderParameter.CompileStatus, out int vsuccess);
+            if (vsuccess == 0)
+            {
+                string infoLog = GL.GetShaderInfoLog(VertShader);
+                // critical error!!!!!
+                GL.DeleteShader(VertShader);
+                GL.DeleteShader(FragShader);
+                Console.WriteLine($"(!) Error compiling vertex shader: {infoLog}");
+            }
+
+            GL.CompileShader(FragShader);
+
+            GL.GetShader(FragShader, ShaderParameter.CompileStatus, out int fsuccess);
+            if (fsuccess == 0)
+            {
+                string infoLog = GL.GetShaderInfoLog(FragShader);
+                // critical error!!!!!
+                GL.DeleteShader(VertShader);
+                GL.DeleteShader(FragShader);
+                Console.WriteLine($"(!) Error compiling fragment shader: {infoLog}");
+            }
+
+            Handle = GL.CreateProgram();
+            GL.AttachShader(Handle, VertShader);
+            GL.AttachShader(Handle, FragShader);
+
+            GL.LinkProgram(Handle);
+
+            GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out int compileSucess);
+            if (compileSucess == 0)
+            {
+                string infoLog = GL.GetProgramInfoLog(Handle);
+                // critical error!!!!!
+                GL.DeleteProgram(Handle);
+                GL.DeleteShader(VertShader);
+                Console.WriteLine($"(!) Error linking shader program: {infoLog}");
+            }
+
+            // clean up
+            GL.DetachShader(Handle, VertShader);
+            GL.DetachShader(Handle, FragShader);
+            GL.DeleteShader(VertShader);
+            GL.DeleteShader(FragShader);
+        }
+
+        // Uses the shader program.
+        public void Use()
+        {
+            GL.UseProgram(Handle);
+        }
+
+        // Deletes the shaderprogram.
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                GL.DeleteProgram(Handle);
+
+                disposedValue = true;
+            }
+        }
+
+        ~ShaderProgram()
+        {
+            if (!disposedValue)
+            {
+                Console.WriteLine("(!) CRITICAL: ShaderProgram was not disposed properly. Please call Dispose() when done rendering.");
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+    }
+}

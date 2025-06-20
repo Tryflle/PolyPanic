@@ -4,6 +4,7 @@ using System.Reflection;
 namespace PolyPanic.Bus
 
 // This class contains the EventBus system for PolyPanic.
+// (Note): This EventBus was ported from one of my old Kotlin projects with help from Claude 4 Sonnet. All of the comments are by me. 
 {
     // This is the attribute itself that can be used to subscribe methods to events.
     [AttributeUsage(AttributeTargets.Method)]
@@ -65,7 +66,7 @@ namespace PolyPanic.Bus
         }
 
         // This method allows you to unsubscribe a listener from the event bus.
-        public void unsubscribe(object listener)
+        public void Unsubscribe(object listener)
         {
             foreach (var subscriberList in subscribers.Values)
             {
