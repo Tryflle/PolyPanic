@@ -79,10 +79,10 @@ class Game : GameWindow
     {
         //super onload
         base.OnLoad();
-
+        // call oninit method for cleanliness
+        Program.OnInit();
         // Post the loadgameevent to the event bus.
         Program.eventBus.Post(new Bus.LoadGameEvent());
-
         // Clear window background color.
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
