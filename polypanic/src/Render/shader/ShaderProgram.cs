@@ -4,9 +4,7 @@ namespace PolyPanic.Render.Shader
 {
     public class ShaderProgram
     {
-        int Handle;
-
-        public int ProgramId => Handle;
+        public int Handle;
 
         private bool disposedValue = false;
 
