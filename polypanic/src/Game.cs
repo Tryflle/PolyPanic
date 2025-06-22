@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
@@ -75,6 +77,18 @@ class Game : GameWindow
         Program.eventBus.Post(new Bus.MouseButtonEvent(e.Button, Bus.MouseButtonEvent.ButtonAction.Released));
     }
 
+    protected override void OnResize(ResizeEventArgs e)
+    {
+        //super onresize
+        base.OnResize(e);
+
+        int x = e.Width;
+        int y = e.Height;
+
+        // Post event
+        Program.eventBus.Post(new Bus.ResizeWindowEvent(x, y));
+    }
+
     protected override void OnLoad()
     {
         //super onload
@@ -93,5 +107,12 @@ class Game : GameWindow
         Size = (width, height), // why is there a warning for deprecation... this is literally whats in the docs... ;-;
         Title = title
     })
-    {}
+    {
+    }
+
+    public void GetSize(out int width, out int height)
+    {
+        width = Size.X;
+        height = Size.Y;
+    }
 }

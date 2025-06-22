@@ -72,4 +72,18 @@ namespace PolyPanic.Bus
     {
         // Nothing to grab from here!
     }
+
+    // Resize Window Event
+    // Contains the new width and height of the window.
+    public class ResizeWindowEvent
+    {
+        public int Width { get; }
+        public int Height { get; }
+
+        public ResizeWindowEvent(int width, int height)
+        {
+            Width = width;
+            Height = height;
+        }
+    }
 }
