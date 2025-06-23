@@ -111,7 +111,15 @@ namespace PolyPanic.Render.Shader
         public void SetMatrix4(string name, Matrix4 matrix)
         {
             int location = GL.GetUniformLocation(Handle, name);
-            GL.UniformMatrix4(location, false, ref matrix);
+            if (location != -1)
+            {
+                GL.UniformMatrix4(location, false, ref matrix);
+            }
+            else
+            {
+                Console.WriteLine($"(!) Warning: Uniform '{name}' not found in shader program.");
+            }
+           
         }
 
         public void SetInt(string name, int value)
@@ -120,6 +128,19 @@ namespace PolyPanic.Render.Shader
             if (location != -1)
             {
                 GL.Uniform1(location, value);
+            }
+            else
+            {
+                Console.WriteLine($"(!) Warning: Uniform '{name}' not found in shader program.");
+            }
+        }
+
+        public void SetVec3(string name, Vector3 vector)
+        {
+            int location = GL.GetUniformLocation(Handle, name);
+            if (location != -1)
+            {
+                GL.Uniform3(location, vector);
             }
             else
             {

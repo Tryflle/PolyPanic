@@ -27,5 +27,7 @@ class Program
         eventBus.Subscribe(new Debug.TestListener());
         // subscribe renderer
         eventBus.Subscribe(new Render.Renderer());
+        // subscribe font renderer
+        eventBus.Subscribe(new Render.Font.FontRenderer());
     }
 }
