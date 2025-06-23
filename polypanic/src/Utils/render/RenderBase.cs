@@ -27,18 +27,28 @@ namespace PolyPanic.Utils.Render
 
             // create shader program
             shaderProgram = new ShaderProgram(VShaderPath, FShaderPath);
+
+            initialized = true;
+        }
+
+        public virtual void LoadVertexData(float[] vertices, uint[] indices = null)
+        {
+            if (!initialized) Init();
+            // todo: load vertex data accordingly
         }
 
         public virtual void BeginRender()
         {
-            if (!initialized)
-            {
-                Init();
-                initialized = true;
-            }
+            if (!initialized) Init();
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            // use shader program and bind vao, as required every frame.
             shaderProgram.Use();
             GL.BindVertexArray(vao);
+        }
+
+        public virtual void EndRender()
+        {
+            // todo: draw elements or arrays
         }
     }
 }
