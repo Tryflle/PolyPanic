@@ -15,7 +15,7 @@ namespace PolyPanic.Render
         int VertexBufferObject; // VBO
         int VertexArrayObject; // VAO
         bool initialized = false; // Used to check if the renderer is initialized.
-        // int ElementBufferObject; // EBO
+        int ElementBufferObject; // EBO
         private Matrix4 _view;
         private Matrix4 _projection;
 
@@ -25,19 +25,7 @@ namespace PolyPanic.Render
         private readonly Stopwatch stopwatch = new Stopwatch();
 
         private ShaderProgram _shader;
-
-        // readonly float[] triangleVertices = {
-        //     -0.5f, -0.5f, 0.0f, //Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, //Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  //Top vertex
-        // };
-        // readonly float[] squareVertices = {
-        //     // Positions        // Colors
-        //     0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // top right - red
-        //     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom right - green  
-        //     -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  // bottom left - blue
-        //     -0.5f,  0.5f, 0.0f,  1.0f, 1.0f, 0.0f   // top left - yellow
-        // };
+        private TextureHelper.Texture _texture;
 
         float[] cubeVertices = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -83,10 +71,10 @@ namespace PolyPanic.Render
             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
 
-        // readonly uint[] squareIndices = {
-        //     0, 1, 2, // first triangle
-        //     0, 2, 3  // second triangle
-        // };
+        readonly uint[] indices = {
+            0, 1, 2, // first triangle
+            0, 2, 3  // second triangle
+        };
 
         // Handles resizes
         [Subscribe]
@@ -108,9 +96,9 @@ namespace PolyPanic.Render
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
             // Generate and bind EBO
-            // ElementBufferObject = GL.GenBuffer();
-            // GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            // GL.BufferData(BufferTarget.ElementArrayBuffer, squareIndices.Length * sizeof(uint), squareIndices, BufferUsageHint.StaticDraw);
+            ElementBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
             // Use shader program to compile and link shaders
             _shader = new ShaderProgram(Path.Combine("src", "assets", "glsl", "basic3d.vert"), Path.Combine("src", "assets", "glsl", "basic3d.frag"));
             // Pass vertex data
@@ -123,6 +111,11 @@ namespace PolyPanic.Render
 
             GL.EnableVertexAttribArray(posLoc);
             GL.EnableVertexAttribArray(texLoc);
+
+            // define and use texture
+            _texture = TextureHelper.Texture.LoadFromFile(Path.Combine("src", "assets", "texture", "test.png"));
+            _texture.Use(TextureUnit.Texture0);
+            _shader.SetInt("texture0", 0);
             
             GL.EnableVertexAttribArray(0);
             // make it 3d
@@ -144,6 +137,7 @@ namespace PolyPanic.Render
             // Render
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             _shader.Use();
+            _texture.Use(TextureUnit.Texture0);
             GL.BindVertexArray(VertexArrayObject);
 
             var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(stopwatch.ElapsedMilliseconds / 10f));
@@ -152,7 +146,7 @@ namespace PolyPanic.Render
             _shader.SetMatrix4("view", _view);
             _shader.SetMatrix4("projection", _projection);
             //args: primtype, amount of vertices to draw, type of ebo elements, offset. since we want to draw everything, 0.
-            // GL.DrawElements(PrimitiveType.Triangles, squareIndices.Length, DrawElementsType.UnsignedInt, 0);
+            // GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36); // Draw the cube with 36 vertices
         }
 

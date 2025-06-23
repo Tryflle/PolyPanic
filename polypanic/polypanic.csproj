@@ -9,12 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="opentk" Version="4.9.4" />
-    <None Update="src\assets\glsl\*.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="src\assets\glsl\*.frag">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <PackageReference Include="StbImageSharp" Version="2.30.15" />
+    <Content Include="src\assets\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
