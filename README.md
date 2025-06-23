@@ -9,7 +9,6 @@ I'm trying to keep all my use of AI to a **minimum** for this project. For every
 - Camera
 - Lighting
 - Model/mesh renderer
-- Test map (bbmodel)
-- Font renderer
+- Test map (obj)
 - Physics
 - We'll SEE from there

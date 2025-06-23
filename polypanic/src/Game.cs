@@ -97,6 +97,8 @@ class Game : GameWindow
         Program.OnInit();
         // Post the loadgameevent to the event bus.
         Program.eventBus.Post(new Bus.LoadGameEvent());
+        // Grab cursor
+        CursorState = CursorState.Grabbed;
         // Clear window background color.
         GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     }
