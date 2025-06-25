@@ -1,9 +1,12 @@
 using System.Diagnostics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using PolyPanic.Bus;
+using PolyPanic.Main;
 using PolyPanic.Render.Shader;
+using PolyPanic.Render.TextureHelper;
 
 namespace PolyPanic.Render
 {
@@ -23,11 +26,13 @@ namespace PolyPanic.Render
 
         private ShaderProgram _shader;
         private TextureHelper.Texture _texture;
-        private Camera.Camera _camera;
-        private float _cameraSpeed = 200f;
+        public static Camera.Camera _camera;
+        private float _cameraSpeed = 2.5f;
         private float _lastDeltaTime = 0f;
         private bool _firstMouse = true; // Used to check if the mouse is moved for the first time.
         private Vector2 _lastMousePosition;
+        private Mesh.MeshRenderer _meshRenderer;
+        private Mesh.Mesh _testMesh;
 
         float[] cubeVertices = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -131,6 +136,9 @@ namespace PolyPanic.Render
             GL.Enable(EnableCap.DepthTest);
             // Initialize the stopwatch, this measures time and can be used for animations.
             stopwatch.Start();
+            // meshrenderer initialization
+            _meshRenderer = new Mesh.MeshRenderer();
+            _testMesh = Mesh.ObjLoader.LoadFromFile(Path.Combine("src", "assets", "model", "InteriorTest.obj"));
             // Initialize the renderer.
             initialized = true;
         }
@@ -143,18 +151,29 @@ namespace PolyPanic.Render
             _lastDeltaTime = e.DeltaTime;
             // Render
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            _shader.Use();
-            _texture.Use(TextureUnit.Texture0);
-            GL.BindVertexArray(VertexArrayObject);
+            // Render the test mesh
+            RenderTestMesh();
+            // Render cube
+            RenderCube();
+            // movement but better i think
+            if (Game.StaticKeyboardState == null || Game.StaticKeyboardState.IsKeyDown == null) return;
+            var keyActions = new (Func<bool> condition, Action action)[]
+            {
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.W), () => _camera.Position += _camera.Front * _cameraSpeed * e.DeltaTime),
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.S), () => _camera.Position -= _camera.Front * _cameraSpeed * e.DeltaTime),
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.A), () => _camera.Position -= Vector3.Cross(_camera.Front, _camera.Up).Normalized() * _cameraSpeed * e.DeltaTime),
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.D), () => _camera.Position += Vector3.Cross(_camera.Front, _camera.Up).Normalized() * _cameraSpeed * e.DeltaTime),
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.Space), () => _camera.Position += _camera.Up * _cameraSpeed * e.DeltaTime),
+                (() => Game.StaticKeyboardState.IsKeyDown(Keys.LeftShift), () => _camera.Position -= _camera.Up * _cameraSpeed * e.DeltaTime)
+            };
 
-            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(stopwatch.ElapsedMilliseconds / 10f));
-
-            _shader.SetMatrix4("model", model);
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
-            //args: primtype, amount of vertices to draw, type of ebo elements, offset. since we want to draw everything, 0.
-            // GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 36); // Draw the cube with 36 vertices
+            foreach (var (condition, action) in keyActions)
+            {
+                if (condition())
+                {
+                    action();
+                }
+            }
         }
 
         [Subscribe]
@@ -165,30 +184,6 @@ namespace PolyPanic.Render
             {
                 Console.WriteLine("Escape key pressed, exiting game.");
                 Environment.Exit(0);
-            }
-            // Movement keys
-            // if (e.action != KeyboardEvent.KeyAction.Pressed) return;
-            Console.WriteLine($"Key pressed: {e.key}, lastdeltatime {_lastDeltaTime}");
-            switch (e.key)
-            {
-                case Keys.W:
-                    _camera.Position += _camera.Front * _cameraSpeed * _lastDeltaTime;
-                    break;
-                case Keys.S:
-                    _camera.Position -= _camera.Front * _cameraSpeed * _lastDeltaTime;
-                    break;
-                case Keys.A:
-                    _camera.Position -= Vector3.Cross(_camera.Front, _camera.Up).Normalized() * _cameraSpeed * _lastDeltaTime;
-                    break;
-                case Keys.D:
-                    _camera.Position += Vector3.Cross(_camera.Front, _camera.Up).Normalized() * _cameraSpeed * _lastDeltaTime;
-                    break;
-                case Keys.Space:
-                    _camera.Position += _camera.Up * _cameraSpeed * _lastDeltaTime;
-                    break;
-                case Keys.LeftShift:
-                    _camera.Position -= _camera.Up * _cameraSpeed * _lastDeltaTime;
-                    break;
             }
         }
 
@@ -209,6 +204,43 @@ namespace PolyPanic.Render
                 _camera.Yaw += deltaX * 0.25f;
                 _camera.Pitch -= deltaY * 0.25f;
             }
+        }
+
+        private void RenderTestMesh()
+        {
+            Matrix4 modelMatrix = Matrix4.CreateTranslation(0, -20, 0);
+            Vector3 lightPosition = new Vector3(2.0f, 2.0f, 2.0f);
+            Vector3 lightColor = Vector3.One;
+            Vector3 objectColor = new Vector3(1f, 0.25f, 1f);
+
+            Texture textureId = Texture.LoadFromFile(Path.Combine("src", "assets", "texture", "test.png"));
+            _meshRenderer.RenderMesh(
+                _testMesh,
+                modelMatrix,
+                _camera,
+                lightPosition,
+                lightColor,
+                objectColor,
+                hasTexture: true,
+                textureId: textureId.Handle
+            );
+        }
+        
+        private void RenderCube()
+        {
+            _shader.Use();
+            _texture.Use(TextureUnit.Texture0);
+            GL.BindVertexArray(VertexArrayObject);
+
+            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(stopwatch.ElapsedMilliseconds / 10f));
+
+            _shader.SetMatrix4("model", model);
+            _shader.SetMatrix4("view", _camera.GetViewMatrix());
+            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
+
+            //args: primtype, amount of vertices to draw, type of ebo elements, offset. since we want to draw everything, 0.
+            // GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36); // Draw the cube with 36 vertices
         }
     }
 }

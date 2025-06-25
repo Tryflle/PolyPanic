@@ -3,11 +3,16 @@ using System.Security.Cryptography.X509Certificates;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using PolyPanic.Debug;
+using PolyPanic.Render;
 
 namespace PolyPanic.Main;
 
 class Game : GameWindow
 {
+
+    public static KeyboardState StaticKeyboardState { get; private set; }
 
     // These methods are all overrides of the GameWindow class methods. What they do is self explanatory.
     protected override void OnUpdateFrame(FrameEventArgs e)
@@ -21,6 +26,8 @@ class Game : GameWindow
         // Post the update frame event to the event bus with the delta time.
         Program.eventBus.Post(new Bus.UpdateFrameEvent((float)e.Time));
 
+        // Update the static keyboard state.
+        StaticKeyboardState = KeyboardState;
         // reverses the two buffers because the docs said so.
         SwapBuffers();
     }

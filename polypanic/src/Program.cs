@@ -29,5 +29,7 @@ class Program
         eventBus.Subscribe(new Render.Renderer());
         // subscribe font renderer
         eventBus.Subscribe(new Render.Font.FontRenderer());
+        // subscribe mesh renderer
+        eventBus.Subscribe(new Render.Mesh.MeshRenderer());
     }
 }
