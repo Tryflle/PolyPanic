@@ -91,7 +91,7 @@ namespace PolyPanic.Render
             GL.Viewport(0, 0, _windowWidth, _windowHeight);
             if (_camera != null)
             {
-                _camera.AspectRatio = (float)_windowWidth / _windowHeight;
+                _camera.AspectRatio = _windowWidth / _windowHeight;
             }
         }
 
@@ -150,7 +150,7 @@ namespace PolyPanic.Render
             _lastDeltaTime = e.DeltaTime;
             // Render
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            // Render the test mesh
+            // Render the test mesh -- TODO: Optimize render only every so many frames. Not exactly sure how to do this yet given the way that OpenGL works.
             RenderTestMesh();
             // Render cube
             RenderCube();

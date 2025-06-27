@@ -1,17 +1,14 @@
-﻿using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using PolyPanic.Debug;
-using PolyPanic.Render;
 
 namespace PolyPanic.Main;
 
 class Game : GameWindow
 {
 
+    // Static keyboard state that can be accessed from anywhere. Better than a keyboard event in some cases.
     public static KeyboardState StaticKeyboardState { get; private set; }
 
     // These methods are all overrides of the GameWindow class methods. What they do is self explanatory.
@@ -21,7 +18,7 @@ class Game : GameWindow
         base.OnUpdateFrame(e);
 
         // Clears screen
-        GL.Clear(ClearBufferMask.ColorBufferBit);
+        // GL.Clear(ClearBufferMask.ColorBufferBit);
 
         // Post the update frame event to the event bus with the delta time.
         Program.eventBus.Post(new Bus.UpdateFrameEvent((float)e.Time));
