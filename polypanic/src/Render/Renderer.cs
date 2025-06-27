@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using PolyPanic.Bus;
 using PolyPanic.Main;
@@ -25,7 +24,7 @@ namespace PolyPanic.Render
         private readonly Stopwatch stopwatch = new Stopwatch();
 
         private ShaderProgram _shader;
-        private TextureHelper.Texture _texture;
+        private Texture _texture;
         public static Camera.Camera _camera;
         private float _cameraSpeed = 2.5f;
         private float _lastDeltaTime = 0f;
@@ -92,7 +91,7 @@ namespace PolyPanic.Render
             GL.Viewport(0, 0, _windowWidth, _windowHeight);
             if (_camera != null)
             {
-                _camera.AspectRatio = _windowWidth / _windowHeight;
+                _camera.AspectRatio = (float)_windowWidth / _windowHeight;
             }
         }
 

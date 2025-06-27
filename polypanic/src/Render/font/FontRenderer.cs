@@ -6,7 +6,6 @@ using PolyPanic.Bus;
 using PolyPanic.Render.Shader;
 using static FreeTypeSharp.FT;
 using static FreeTypeSharp.FT_LOAD;
-using static FreeTypeSharp.FT_Render_Mode_;
 
 namespace PolyPanic.Render.Font
 {

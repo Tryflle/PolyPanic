@@ -1,7 +1,6 @@
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using PolyPanic.Bus;
-using PolyPanic.Render.Camera;
 using PolyPanic.Utils.Render;
 
 namespace PolyPanic.Render.Mesh
