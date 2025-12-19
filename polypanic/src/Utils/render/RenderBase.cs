@@ -4,7 +4,7 @@ using PolyPanic.Render.Shader;
 namespace PolyPanic.Utils.Render
 {
     // This is an extension class that I will use at some point to reduce boilerplate.
-    public abstract class RenderBase
+    public abstract class RenderBase : IDisposable
     {
 
         protected int vao, vbo, ebo;
@@ -49,6 +49,40 @@ namespace PolyPanic.Utils.Render
         public virtual void EndRender()
         {
             // todo: draw elements or arrays
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Dispose managed resources
+                shaderProgram?.Dispose();
+            }
+
+            // Dispose unmanaged OpenGL resources
+            if (vao != 0)
+            {
+                GL.DeleteVertexArray(vao);
+                vao = 0;
+            }
+            
+            if (vbo != 0)
+            {
+                GL.DeleteBuffer(vbo);
+                vbo = 0;
+            }
+            
+            if (ebo != 0)
+            {
+                GL.DeleteBuffer(ebo);
+                ebo = 0;
+            }
         }
     }
 }

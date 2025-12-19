@@ -9,7 +9,7 @@ using PolyPanic.Render.TextureHelper;
 
 namespace PolyPanic.Render
 {
-    public class Renderer
+    public class Renderer : IDisposable
     {
         // The second real OpenGL challenge: Drawing a square.
         int VertexBufferObject; // VBO
@@ -32,6 +32,12 @@ namespace PolyPanic.Render
         private Vector2 _lastMousePosition;
         private Mesh.MeshRenderer _meshRenderer;
         private Mesh.Mesh _testMesh;
+        private Texture _cachedTestTexture; // Cache texture to prevent loading every frame
+
+        private Matrix4 _modelMatrix = Matrix4.CreateTranslation(0, -20, 0);
+        private Vector3 _lightPosition = new Vector3(2.0f, 2.0f, 2.0f);
+        private Vector3 _lightColor = Vector3.One;
+        private Vector3 _objectColor = new Vector3(1f, 0.25f, 1f);
 
         float[] cubeVertices = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -138,6 +144,8 @@ namespace PolyPanic.Render
             // meshrenderer initialization
             _meshRenderer = new Mesh.MeshRenderer();
             _testMesh = Mesh.ObjLoader.LoadFromFile(Path.Combine("src", "assets", "model", "InteriorTest.obj"));
+            // Cache the test texture to prevent loading every frame
+            _cachedTestTexture = Texture.LoadFromFile(Path.Combine("src", "assets", "texture", "test.png"));
             // Initialize the renderer.
             initialized = true;
         }
@@ -205,23 +213,19 @@ namespace PolyPanic.Render
             }
         }
 
+
         private void RenderTestMesh()
         {
-            Matrix4 modelMatrix = Matrix4.CreateTranslation(0, -20, 0);
-            Vector3 lightPosition = new Vector3(2.0f, 2.0f, 2.0f);
-            Vector3 lightColor = Vector3.One;
-            Vector3 objectColor = new Vector3(1f, 0.25f, 1f);
-
-            Texture textureId = Texture.LoadFromFile(Path.Combine("src", "assets", "texture", "test.png"));
+            // Use cached texture instead of loading every frame
             _meshRenderer.RenderMesh(
                 _testMesh,
-                modelMatrix,
+                _modelMatrix,
                 _camera,
-                lightPosition,
-                lightColor,
-                objectColor,
+                _lightPosition,
+                _lightColor,
+                _objectColor,
                 hasTexture: true,
-                textureId: textureId.Handle
+                textureId: _cachedTestTexture.Handle
             );
         }
         
@@ -240,6 +244,40 @@ namespace PolyPanic.Render
             //args: primtype, amount of vertices to draw, type of ebo elements, offset. since we want to draw everything, 0.
             // GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36); // Draw the cube with 36 vertices
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _shader?.Dispose();
+                _texture?.Dispose();
+                _cachedTestTexture?.Dispose();
+            }
+            
+            if (VertexBufferObject != 0)
+            {
+                GL.DeleteBuffer(VertexBufferObject);
+                VertexBufferObject = 0;
+            }
+            
+            if (VertexArrayObject != 0)
+            {
+                GL.DeleteVertexArray(VertexArrayObject);
+                VertexArrayObject = 0;
+            }
+            
+            if (ElementBufferObject != 0)
+            {
+                GL.DeleteBuffer(ElementBufferObject);
+                ElementBufferObject = 0;
+            }
         }
     }
 }

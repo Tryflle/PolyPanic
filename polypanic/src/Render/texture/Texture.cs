@@ -3,9 +3,10 @@ using StbImageSharp;
 
 namespace PolyPanic.Render.TextureHelper
 {
-    public class Texture
+    public class Texture : IDisposable
     {
         public readonly int Handle;
+        private bool _disposed = false;
 
         public Texture(int handle)
         {
@@ -44,6 +45,32 @@ namespace PolyPanic.Render.TextureHelper
             // bind the texture to the specified texture unit
             GL.ActiveTexture(unit);
             GL.BindTexture(TextureTarget.Texture2D, Handle);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources if any
+                }
+
+                // Dispose unmanaged resources
+                GL.DeleteTexture(Handle);
+                _disposed = true;
+            }
+        }
+
+        ~Texture()
+        {
+            Dispose(false);
         }
     }
 }
